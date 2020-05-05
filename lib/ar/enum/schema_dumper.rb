@@ -13,7 +13,9 @@ module AR
 
         stream.puts("  # These are enum types available on this database") if list.any?
 
-        list.each do |row|
+        list.sort_by do |row|
+          row["name"].to_s
+        end.each do |row|
           labels = row["labels"].split(",")
           name = row["name"].to_sym
 

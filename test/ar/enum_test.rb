@@ -230,10 +230,11 @@ class EnumTest < Minitest::Test
     assert_equal %w[draft published], enum_labels(:article_status)
   end
 
-  test "dumps schema" do
+  test "dumps schema in alphabetical order" do
     with_migration do
       def up
         create_enum :article_status, %w[draft published]
+        create_enum :roles, %w[user admin]
         create_enum :color, %w[blue green yellow]
 
         create_table :articles do |t|
@@ -253,7 +254,13 @@ class EnumTest < Minitest::Test
     ActiveRecord::SchemaDumper.dump(ActiveRecord::Base.connection, stream)
     contents = stream.tap(&:rewind).read
 
-    assert_includes contents, %{create_enum :article_status, ["draft", "unlisted", "published"]}
+    puts "contents"
+    assert_includes contents, <<-SCHEMA
+  create_enum :article_status, ["draft", "unlisted", "published"]
+  create_enum :color, ["blue", "green", "yellow"]
+  create_enum :roles, ["user", "admin"]
+    SCHEMA
+
     assert_includes contents, %{create_enum :color, ["blue", "green", "yellow"]}
     assert_includes contents, %[create_table "articles"]
     assert_includes contents, %[t.article_status "status"]
